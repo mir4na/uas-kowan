@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Calculator - Passkey Auth</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), 0 0 40px rgba(0, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), 0 0 60px rgba(0, 255, 255, 0.3); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #0a0e27, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+            animation: float 10s ease-in-out infinite;
+        }
+
+        .container {
+            background: rgba(20, 20, 40, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            color: white;
+            padding: 35px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00ffff, #00bfff, #8a2be2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+            color: #a0a0ff;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .auth-section, .calculator-section {
+            display: none;
+        }
+
+        .auth-section.active, .calculator-section.active {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #00ffff;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(30, 30, 60, 0.5);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00ffff;
+            background: rgba(30, 30, 60, 0.7);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00ffff, #00bfff);
+            color: #0a0e27;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: linear-gradient(135deg, #8a2be2, #9b4dca);
+            color: white;
+        }
+
+        .button.secondary:hover {
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.4);
+        }
+
+        .user-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .user-info strong {
+            color: #00ffff;
+        }
+
+        .user-info span {
+            color: #ffffff;
+            margin-left: 8px;
+        }
+
+        .result {
+            background: rgba(30, 30, 60, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item label {
+            margin: 0;
+            font-weight: 600;
+            color: #00bfff;
+            text-transform: none;
+        }
+
+        .result-item span {
+            color: #00ffff;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border: 1px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.error {
+            background: rgba(255, 50, 50, 0.1);
+            color: #ff6b6b;
+            border-color: rgba(255, 50, 50, 0.3);
+        }
+
+        .message.success {
+            background: rgba(0, 255, 150, 0.1);
+            color: #00ff9f;
+            border-color: rgba(0, 255, 150, 0.3);
+        }
+
+        .message.info {
+            background: rgba(0, 191, 255, 0.1);
+            color: #00bfff;
+            border-color: rgba(0, 191, 255, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Particle background effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.5);
+            animation: particleFloat 10s infinite ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <div class="header">
+            <h1>🔵 Circle Calculator</h1>
+            <p>Passwordless Authentication with Passkey</p>
+        </div>
+
+        <div class="content">
+            <div id="authSection" class="auth-section active">
+                <div id="message"></div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                </div>
+
+                <button class="button" onclick="register()">Register with Passkey</button>
+                <button class="button secondary" onclick="login()">Login with Passkey</button>
+            </div>
+
+            <div id="calculatorSection" class="calculator-section">
+                <div class="user-info">
+                    <div>
+                        <strong>User:</strong> <span id="currentUser"></span>
+                    </div>
+                    <button class="button" style="width: auto; padding: 8px 16px; margin: 0;" onclick="logout()">Logout</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="radius">Radius (r)</label>
+                    <input type="number" id="radius" placeholder="Enter radius" step="0.01" min="0">
+                </div>
+
+                <button class="button" onclick="calculate()">Calculate</button>
+
+                <div id="result" class="result hidden">
+                    <div class="result-item">
+                        <label>Radius:</label>
+                        <span id="resultRadius">-</span>
+                    </div>
+                    <div class="result-item">
+                        <label>Area (πr²):</label>
+                        <span id="resultArea">-</span>
+                    </div>
+                    <div class="result-item">
+                        <label>Circumference (2πr):</label>
+                        <span id="resultCircumference">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+    <script>
+        // Create particle effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const size = Math.random() * 4 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: circle-calculator-config
+data:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "circle_calculator"
+  PORT: "3000"
+  RP_NAME: "Circle Calculator"
+  RP_ID: "tactual-soapiest-edmond.ngrok-free.dev"
+  ORIGIN: "https://tactual-soapiest-edmond.ngrok-free.dev"

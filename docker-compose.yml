@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: circle-calc-db
+    environment:
+      POSTGRES_DB: circle_calculator
+      POSTGRES_USER: mirana
+      POSTGRES_PASSWORD: ambasing
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mirana"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - circle-network
+
+  app:
+    image: circle-calculator:latest
+    container_name: circle-calc-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: circle_calculator
+      DB_USER: mirana
+      DB_PASSWORD: ambasing
+      PORT: 3000
+      RP_NAME: Circle Calculator
+      RP_ID: localhost
+      ORIGIN: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - circle-network
+
+volumes:
+  postgres_data:
+
+networks:
+  circle-network:
+    driver: bridge
